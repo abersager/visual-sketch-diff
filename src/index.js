@@ -41,10 +41,10 @@ async function visualSketchDiff(options) {
   const artboardsBefore = shell.ls(`${pathBefore}/*.png`).map(filePath => path.basename(filePath))
   const artboardsAfter = shell.ls(`${pathAfter}/*.png`).map(filePath => path.basename(filePath))
 
-  const result = arrayDiff(artboardsBefore, artboardsAfter)
+  const {created, deleted, subsisting } = arrayDiff(artboardsBefore, artboardsAfter)
 
   console.log(`Diffing...`);
-  const promises = result.subsisting.map((fileName) => {
+  const promises = subsisting.map((fileName) => {
     const fileBefore = `${pathBefore}/${fileName}`
     const fileAfter = `${pathAfter}/${fileName}`
     const fileDiff = `${pathDiff}/${fileName}`
@@ -52,13 +52,17 @@ async function visualSketchDiff(options) {
   })
 
   const diffRatios = await Promise.all(promises)
-  console.log(diffRatios);
-  result.subsisting = result.subsisting.map((name, index) => ({
+
+  const artboards = subsisting.map((name, index) => ({
+    type: 'subsisting',
     name,
     diffRatio: diffRatios[index]
   }))
 
-  const app = <App {...result} />
+  artboards.concat(created.map(x => ({ name: x, type: 'created' })))
+  artboards.concat(deleted.map(x => ({ name: x, type: 'deleted' })))
+
+  const app = <App artboards={artboards} />
 
   const appString = ReactDOM.renderToString(app)
 

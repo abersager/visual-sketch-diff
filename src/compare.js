@@ -4,8 +4,9 @@ const pixelmatch = require('pixelmatch')
 
 export default function compare (path1, path2, pathDiff) {
   return new Promise((resolve, reject) => {
+    let filesRead = 0
+
     const parsed = () => {
-      console.log('parsed', path1, path2);
       if (++filesRead < 2) {
         return
       }
@@ -26,7 +27,5 @@ export default function compare (path1, path2, pathDiff) {
 
     const image1 = fs.createReadStream(path1).pipe(new PNG()).on('parsed', parsed)
     const image2 = fs.createReadStream(path2).pipe(new PNG()).on('parsed', parsed)
-
-    let filesRead = 0
   })
 }
