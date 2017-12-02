@@ -14,9 +14,11 @@ export default function compare (path1, path2, pathDiff) {
 
       const numDiffPixels = pixelmatch(image1.data, image2.data, diff.data, image1.width, image1.height, { threshold: 0.1 })
 
+      const diffRatio = numDiffPixels / image1.width / image1.height
+
       const writeStream = fs.createWriteStream(pathDiff)
       writeStream.on('finish', () => {
-        resolve(numDiffPixels)
+        resolve(diffRatio)
       })
 
       diff.pack().pipe(writeStream)

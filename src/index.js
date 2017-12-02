@@ -22,35 +22,42 @@ if (options.files.length !== 3) {
   exit(1)
 }
 
-const basePath = options.files[2]
-const pathBefore = `${basePath}/before`
-const pathAfter = `${basePath}/after`
-const pathDiff = `${basePath}/diff`
+async function visualSketchDiff(options) {
+  const basePath = options.files[2]
+  const pathBefore = `${basePath}/before`
+  const pathAfter = `${basePath}/after`
+  const pathDiff = `${basePath}/diff`
 
-shell.exec(`rm -rf ${basePath}`)
-shell.exec(`mkdir -p ${pathBefore}`)
-shell.exec(`mkdir -p ${pathAfter}`)
-shell.exec(`mkdir -p ${pathDiff}`)
+  shell.exec(`rm -rf ${basePath}`)
+  shell.exec(`mkdir -p ${pathBefore}`)
+  shell.exec(`mkdir -p ${pathAfter}`)
+  shell.exec(`mkdir -p ${pathDiff}`)
 
-console.log(`Dumping ${options.files[0]}...`);
-shell.exec(`sketchtool export artboards --include-symbols=YES --save-for-web --output=${pathBefore} ${options.files[0]}`)
-console.log(`Dumping ${options.files[1]}...`);
-shell.exec(`sketchtool export artboards --include-symbols=YES --save-for-web --output=${pathAfter} ${options.files[1]}`)
+  console.log(`Dumping ${options.files[0]}...`);
+  shell.exec(`sketchtool export artboards --include-symbols=YES --save-for-web --output=${pathBefore} ${options.files[0]}`)
+  console.log(`Dumping ${options.files[1]}...`);
+  shell.exec(`sketchtool export artboards --include-symbols=YES --save-for-web --output=${pathAfter} ${options.files[1]}`)
 
-const artboardsBefore = shell.ls(`${pathBefore}/*.png`).map(filePath => path.basename(filePath))
-const artboardsAfter = shell.ls(`${pathAfter}/*.png`).map(filePath => path.basename(filePath))
+  const artboardsBefore = shell.ls(`${pathBefore}/*.png`).map(filePath => path.basename(filePath))
+  const artboardsAfter = shell.ls(`${pathAfter}/*.png`).map(filePath => path.basename(filePath))
 
-const result = arrayDiff(artboardsBefore, artboardsAfter)
+  const result = arrayDiff(artboardsBefore, artboardsAfter)
 
-console.log(`Diffing...`);
-const promises = result.subsisting.map((fileName) => {
-  const fileBefore = `${pathBefore}/${fileName}`
-  const fileAfter = `${pathAfter}/${fileName}`
-  const fileDiff = `${pathDiff}/${fileName}`
-  return compare(fileBefore, fileAfter, fileDiff)
-})
+  console.log(`Diffing...`);
+  const promises = result.subsisting.map((fileName) => {
+    const fileBefore = `${pathBefore}/${fileName}`
+    const fileAfter = `${pathAfter}/${fileName}`
+    const fileDiff = `${pathDiff}/${fileName}`
+    return compare(fileBefore, fileAfter, fileDiff)
+  })
 
-Promise.all(promises).then(() => {
+  const diffRatios = await Promise.all(promises)
+  console.log(diffRatios);
+  result.subsisting = result.subsisting.map((name, index) => ({
+    name,
+    diffRatio: diffRatios[index]
+  }))
+
   const app = <App {...result} />
 
   const appString = ReactDOM.renderToString(app)
@@ -58,6 +65,7 @@ Promise.all(promises).then(() => {
   const html = htmlTemplate({ appString })
 
   fs.writeFileSync(`${basePath}/index.html`, html)
-}).catch((e) => {
-  console.log(e);
-})
+}
+
+
+visualSketchDiff(options)
