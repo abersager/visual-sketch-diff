@@ -1,29 +1,33 @@
 #!/usr/bin/env node
+const fs = require('fs')
 const commandLineArgs = require('command-line-args')
 const shell = require('shelljs')
 const path = require('path')
-const fs = require('fs')
-const PNG = require('pngjs').PNG
-const pixelmatch = require('pixelmatch')
 const React = require('react')
 const ReactDOM = require('react-dom/server')
 
 import arrayDiff from './array-diff'
 import htmlTemplate from './html-template'
+import compare from './compare'
 
 import App from './components/App'
 
 const optionDefinitions = [
-  { name: 'files', type: String, multiple: true, defaultOption: true },
-  { name: 'output', type: String }
+  { name: 'files', type: String, multiple: true, defaultOption: true }
 ]
 
 const options = commandLineArgs(optionDefinitions)
+if (options.files.length !== 3) {
+  console.log('Usage: visual-sketch-diff <before.sketch> <after.sketch> <path_to_report_directory>')
+  exit(1)
+}
 
-const pathBefore = `/tmp/visual-sketch-diff/before`
-const pathAfter = `/tmp/visual-sketch-diff/after`
-const pathDiff = `/tmp/visual-sketch-diff/diff`
+const basePath = options.files[2]
+const pathBefore = `${basePath}/before`
+const pathAfter = `${basePath}/after`
+const pathDiff = `${basePath}/diff`
 
+shell.exec(`rm -rf ${basePath}`)
 shell.exec(`mkdir -p ${pathBefore}`)
 shell.exec(`mkdir -p ${pathAfter}`)
 shell.exec(`mkdir -p ${pathDiff}`)
@@ -39,14 +43,21 @@ const artboardsAfter = shell.ls(`${pathAfter}/*.png`).map(filePath => path.basen
 const result = arrayDiff(artboardsBefore, artboardsAfter)
 
 console.log(`Diffing...`);
-result.subsisting.forEach(function (fileName) {
-  shell.exec(`blink-diff --no-composition "${pathBefore}/${fileName}" "${pathAfter}/${fileName}" --output "${pathDiff}/${fileName}" &>/dev/null`)
+const promises = result.subsisting.map((fileName) => {
+  const fileBefore = `${pathBefore}/${fileName}`
+  const fileAfter = `${pathAfter}/${fileName}`
+  const fileDiff = `${pathDiff}/${fileName}`
+  return compare(fileBefore, fileAfter, fileDiff)
 })
 
-const app = <App {...result} pathBefore={pathBefore} pathAfter={pathAfter} pathDiff={pathDiff} />
+Promise.all(promises).then(() => {
+  const app = <App {...result} />
 
-const appString = ReactDOM.renderToString(app)
+  const appString = ReactDOM.renderToString(app)
 
-const html = htmlTemplate({ appString })
+  const html = htmlTemplate({ appString })
 
-fs.writeFileSync(options.output, html)
+  fs.writeFileSync(`${basePath}/index.html`, html)
+}).catch((e) => {
+  console.log(e);
+})

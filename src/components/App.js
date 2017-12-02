@@ -1,6 +1,6 @@
 import React from 'react'
 
-export default ({ created, deleted, subsisting, pathBefore, pathAfter, pathDiff }) => {
+export default ({ created, deleted, subsisting }) => {
   return (
     <div>
       <h1>visual-sketch-diff</h1>
@@ -11,13 +11,13 @@ export default ({ created, deleted, subsisting, pathBefore, pathAfter, pathDiff 
             <h3>{x}</h3>
             <div className="diff-row">
               <div className="before">
-                <img src={`${pathBefore}/${x}`} />
+                <img src={`./before/${x}`} />
               </div>
               <div className="diff">
-                <img src={`${pathDiff}/${x}`} />
+                <img src={`./diff/${x}`} />
               </div>
               <div className="after">
-                <img src={`${pathAfter}/${x}`} />
+                <img src={`./after/${x}`} />
               </div>
             </div>
           </li>
