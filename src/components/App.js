@@ -33,9 +33,12 @@ class Artboard extends React.Component {
     const { expanded } = this.state
 
     return (
-      <li>
-        <h3>{this.getPrefix()}: {name}</h3>
-        <div className={`diff-row ${type}`} style={{ display: expanded ? null : 'none' }}>
+      <li className={expanded ? 'expanded' : ''}>
+        <h3>
+          <button />
+          {this.getPrefix()}: {name}
+        </h3>
+        <div className={`diff-row ${type}`}>
           <div className="before">
             {type !== 'created' ? <img src={`./before/${name}`} /> : null}
           </div>

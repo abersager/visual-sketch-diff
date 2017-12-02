@@ -9,10 +9,36 @@ export default ({ appString }) => {
       body {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
       }
-      .diff-row {
-        display: flex;
-        flex-direction: row;
+      ul {
+        list-style: none;
+        padding: 0;
       }
+      li {
+      }
+      li button {
+        display: inline-block;
+        width: 24px;
+        height: 24px;
+        background: 0;
+        margin-right: .5em;
+      }
+      li button:before {
+        content: '▶︎';
+        display: block;
+      }
+      li.expanded button:before {
+        content: '▼';
+      }
+      li .diff-row {
+        display: none;
+        flex-direction: row;
+        max-height: 200px;
+        overflow:hidden;
+      }
+      li.expanded .diff-row {
+        display: flex;
+      }
+
       img {
         max-width: 100%;
       }
@@ -22,7 +48,28 @@ export default ({ appString }) => {
     <div id="main">
     ${appString}
     </div>
-    <script src="/js/bundle.js"></script>
+    <script>
+    (function() {
+      const toggleClass = (el, className) => {
+        const classNames = el.className.split(' ')
+
+        const filtered = classNames.filter(x => x !== className)
+
+        if (filtered.length === classNames.length) {
+          filtered.push(className)
+        }
+        el.className = filtered.join(' ')
+      }
+
+      const handleClick = (e) => {
+        const li = e.currentTarget.parentElement.parentElement
+
+        toggleClass(li, 'expanded')
+      }
+
+      document.querySelectorAll('li button').forEach((el) => { el.addEventListener('click', handleClick) })
+    })()
+    </script>
   </body>
 </html>
 `
