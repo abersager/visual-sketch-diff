@@ -32,11 +32,24 @@ export default ({ appString }) => {
       li .diff-row {
         display: none;
         flex-direction: row;
+        max-width: 600px;
         max-height: 200px;
         overflow:hidden;
+        cursor: zoom-in;
       }
       li.expanded .diff-row {
         display: flex;
+      }
+      li .diff-row.full-screen {
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        max-width: none;
+        max-height: none;
+        background: white;
+        cursor: zoom-out;
       }
 
       img {
@@ -61,13 +74,20 @@ export default ({ appString }) => {
         el.className = filtered.join(' ')
       }
 
-      const handleClick = (e) => {
+      const handleButtonClick = (e) => {
         const li = e.currentTarget.parentElement.parentElement
 
         toggleClass(li, 'expanded')
       }
 
-      document.querySelectorAll('li button').forEach((el) => { el.addEventListener('click', handleClick) })
+      const handleDiffClick = (e) => {
+        const diffRow = e.currentTarget
+
+        toggleClass(diffRow, 'full-screen')
+      }
+
+      document.querySelectorAll('li button').forEach((el) => { el.addEventListener('click', handleButtonClick) })
+      document.querySelectorAll('li .diff-row').forEach((el) => { el.addEventListener('click', handleDiffClick) })
     })()
     </script>
   </body>
