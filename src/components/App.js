@@ -24,7 +24,7 @@ class Artboard extends React.Component {
     return {
       created: 'Added',
       deleted: 'Removed',
-      subsisting: this.hasChanged() ? 'Changed' : 'Unchanged'
+      subsisting: this.hasChanged() ? `Changed (${(diffRatio * 100).toFixed(2)}%)` : 'Unchanged'
     }[type]
   }
 
