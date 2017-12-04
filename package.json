@@ -1,6 +1,6 @@
 {
   "name": "visual-sketch-diff",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Visual Diff of Sketch files",
   "main": "dist/index.js",
   "bin": "dist/index.js",
